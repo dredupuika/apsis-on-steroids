@@ -28,7 +28,7 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
     data_subscribers
   end
 
-  SUBSCRIBERS_VALID_ARGS = [:all_demographics, :timeout, :field_names, :allow_paginated]
+  SUBSCRIBERS_VALID_ARGS = [:all_demographics, :timeout, :field_names, :allow_paginated, :filter_id]
 
   # Returns the subscribers of the mailing list.
   def subscribers(args = {}, &blk)
@@ -37,6 +37,7 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
     end
 
     all_demographics = args.key?(:all_demographics) ? args[:all_demographics] : false
+    filter_id = args[:filter_id].present? ? "/#{args[:filter_id]}" : ""
     timeout = args[:timeout] || 300
     field_names = args[:field_names] || []
     allow_paginated = args.key?(:allow_paginated) ? args[:allow_paginated] : true
@@ -46,7 +47,7 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
       return subscribers_paginated(&blk)
     end
 
-    data = aos.req("v1/mailinglists/#{data(:id)}/subscribers/all", :post, json: {
+    data = aos.req("v1/mailinglists/#{data(:id)}/subscribers/all#{filter_id}", :post, json: {
       "AllDemographics" => all_demographics,
       "FieldNames" => field_names
     })
