@@ -43,7 +43,7 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
     allow_paginated = args.key?(:allow_paginated) ? args[:allow_paginated] : true
 
     # Abort and do paginated if no reason to get everything as JSON.
-    if allow_paginated && !all_demographics && field_names.empty?
+    if allow_paginated && !all_demographics && field_names.empty? && filter_id.blank?
       return subscribers_paginated(&blk)
     end
 
