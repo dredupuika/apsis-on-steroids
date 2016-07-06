@@ -28,7 +28,7 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
     data_subscribers
   end
 
-  SUBSCRIBERS_VALID_ARGS = [:all_demographics, :timeout, :field_names, :allow_paginated, :filter_id]
+  SUBSCRIBERS_VALID_ARGS = [:all_demographics, :timeout, :field_names, :allow_paginated, :filter_id, :request_rate]
 
   # Returns the subscribers of the mailing list.
   def subscribers(args = {}, &blk)
@@ -37,10 +37,11 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
     end
 
     all_demographics = args.key?(:all_demographics) ? args[:all_demographics] : false
-    filter_id = args[:filter_id].present? ? "/#{args[:filter_id]}" : ""
-    timeout = args[:timeout] || 300
-    field_names = args[:field_names] || []
-    allow_paginated = args.key?(:allow_paginated) ? args[:allow_paginated] : true
+    filter_id        = args[:filter_id].present? ? "/#{args[:filter_id]}" : ""
+    timeout          = args[:timeout] || 300
+    field_names      = args[:field_names] || []
+    allow_paginated  = args.key?(:allow_paginated) ? args[:allow_paginated] : true
+    request_rate     = args[:request_rate] || 1
 
     # Abort and do paginated if no reason to get everything as JSON.
     if allow_paginated && !all_demographics && field_names.empty? && filter_id.blank?
@@ -59,7 +60,7 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
 
     Timeout.timeout(timeout) do
       loop do
-        sleep 1
+        sleep request_rate
         res = aos.req_json(url.path)
 
         if res["State"] == "2"
