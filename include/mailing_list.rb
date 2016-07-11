@@ -53,7 +53,6 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
       "FieldNames" => field_names
     })
     res = data.fetch(:json)
-    response = data.fetch(:response)
 
     url = URI.parse(res["Result"]["PollURL"])
     data_subscribers = nil
@@ -72,7 +71,7 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
         else
           ApsisOnSteroids::Errors::InvalidState.error(
             message: "Unknown state: '#{res["State"]}': #{res}",
-            response: response
+            response: data.fetch(:response)
           )
         end
       end
@@ -97,6 +96,49 @@ class ApsisOnSteroids::MailingList < ApsisOnSteroids::SubBase
     end
 
     return ret
+  end
+
+  SUBSCRIBER_COUNT_VALID_ARGS = [ :timeout, :filter_id, :request_rate]
+  # Returns the subscribers of the mailing list.
+  def subscriber_count(args = {}, &blk)
+    args.each do |key, value|
+      raise "Invalid argument: '#{key}'." unless SUBSCRIBER_COUNT_VALID_ARGS.include?(key)
+    end
+
+    filter_id        = args[:filter_id].present? ? "/#{args[:filter_id]}" : ""
+    timeout          = args[:timeout] || 300
+    request_rate     = args[:request_rate] || 1
+
+    data = aos.req("v1/mailinglists/#{data(:id)}/subscribers/all#{filter_id}", :post, json: {
+      "AllDemographics" => false,
+      "FieldNames" => []
+    })
+    res = data.fetch(:json)
+
+    url = URI.parse(res["Result"]["PollURL"])
+    data_subscribers = nil
+
+    Timeout.timeout(timeout) do
+      loop do
+        sleep request_rate
+        res = aos.req_json(url.path)
+
+        if res["State"] == "2"
+          data_url = URI.parse(res["DataUrl"])
+          data_subscribers = aos.req_json(data_url.path)
+          break
+        elsif res["State"] == "0" || res["State"] == "1"
+          # Keep waiting.
+        else
+          ApsisOnSteroids::Errors::InvalidState.error(
+            message: "Unknown state: '#{res["State"]}': #{res}",
+            response: data.fetch(:response)
+          )
+        end
+      end
+    end
+
+    return data_subscribers.length
   end
 
   # Returns the subscribers of the mailing list.
