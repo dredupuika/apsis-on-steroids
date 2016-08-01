@@ -3,6 +3,13 @@ class ApsisOnSteroids::Newsletter < ApsisOnSteroids::SubBase
     list_for("newsletters/v1/%{newsletter_id}/links", "Link", args)
   end
 
+  def web_version
+    resource_url = "v1/newsletters/%{newsletter_id}/webversion".gsub("%{newsletter_id}", data(:id).to_s)
+    results = aos.req_json(resource_url)
+
+    return results["Result"]
+  end
+
   private
 
   def list_for(resource_url, resource_name, args = {})
