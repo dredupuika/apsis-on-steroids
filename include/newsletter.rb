@@ -10,7 +10,7 @@ class ApsisOnSteroids::Newsletter < ApsisOnSteroids::SubBase
     results = aos.req_json(resource_url)
 
     Enumerator.new do |yielder|
-      aos.read_resources_from_array(resource_name, results).each do |resource|
+      aos.read_resources_from_array(resource_name, results["Result"]["NewsletterLinks"]).each do |resource|
         yielder << resource
       end
     end
