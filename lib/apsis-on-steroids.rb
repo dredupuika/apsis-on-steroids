@@ -66,15 +66,28 @@ class ApsisOnSteroids
   end
 
   def newsletters
-    res = req_json("newsletters/v2/1/999")
 
+
+    page = 1
+    res = req_json("newsletters/v2/#{page}/999")
+    total_pages = res["Result"]["TotalPages"]
     ret = []
-    res["Result"]["Items"].each do |newsletter|
-      ret << ApsisOnSteroids::Newsletter.new(
-        aos: self,
-        data: newsletter
-      )
+
+    until i > total_pages  do
+      if page != 1
+        res = req_json("newsletters/v2/#{page}/999")
+      end
+
+      res["Result"]["Items"].each do |newsletter|
+        ret << ApsisOnSteroids::Newsletter.new(
+          aos: self,
+          data: newsletter
+        )
+      end
+      page +=1;
     end
+
+
 
     return ret
   end
