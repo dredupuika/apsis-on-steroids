@@ -65,6 +65,20 @@ class ApsisOnSteroids
     return ret
   end
 
+  def newsletters
+    res = req_json("newsletters/v2/1/999")
+
+    ret = []
+    res["Result"]["Items"].each do |newsletter|
+      ret << ApsisOnSteroids::Newsletter.new(
+        aos: self,
+        data: newsletter
+      )
+    end
+
+    return ret
+  end
+
   def create_mailing_list(data)
     res = req_json("v1/mailinglists/", :post, json: data)
     if res["Code"] == 1
@@ -90,6 +104,16 @@ class ApsisOnSteroids
         yielder << sending
       end
     end
+  end
+
+  def newsletter_by_id(id)
+    tried_ids = []
+    newsletters.each do |newsletter|
+      return newsletter if newsletter.data(:id) == id.to_i
+      tried_ids << newsletter.data(:id)
+    end
+
+    raise "Newsletter by that ID could not be found: #{id} in list #{tried_ids}"
   end
 
   def mailing_list_by_name(name)
