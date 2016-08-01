@@ -73,7 +73,7 @@ class ApsisOnSteroids
     total_pages = res["Result"]["TotalPages"]
     ret = []
 
-    until i > total_pages  do
+    until page > total_pages  do
       if page != 1
         res = req_json("newsletters/v2/#{page}/999")
       end
