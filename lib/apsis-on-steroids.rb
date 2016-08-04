@@ -129,6 +129,17 @@ class ApsisOnSteroids
     raise "Newsletter by that ID could not be found: #{id} in list #{tried_ids}"
   end
 
+  def newsletter_links(id)
+    resource_url = "newsletters/v1/%{newsletter_id}/links".gsub("%{newsletter_id}", id.to_s)
+    results = aos.req_json(resource_url)
+
+    Enumerator.new do |yielder|
+      aos.read_resources_from_array("Link", results["Result"]["NewsletterLinks"]).each do |resource|
+        yielder << resource
+      end
+    end
+  end
+
   def mailing_list_by_name(name)
     mailing_lists.each do |mlist|
       return mlist if name.to_s == mlist.data(:name).to_s
