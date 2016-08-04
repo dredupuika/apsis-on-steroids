@@ -131,10 +131,10 @@ class ApsisOnSteroids
 
   def newsletter_links(id)
     resource_url = "newsletters/v1/%{newsletter_id}/links".gsub("%{newsletter_id}", id.to_s)
-    results = aos.req_json(resource_url)
+    results = req_json(resource_url)
 
     Enumerator.new do |yielder|
-      aos.read_resources_from_array("Link", results["Result"]["NewsletterLinks"]).each do |resource|
+      read_resources_from_array("Link", results["Result"]["NewsletterLinks"]).each do |resource|
         yielder << resource
       end
     end
